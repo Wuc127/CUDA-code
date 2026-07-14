@@ -1,4 +1,32 @@
+<div align="center">
+
 # CUDA-code
+
+### CUDA 高性能计算与算子优化学习项目
+
+<p>
+  <img src="https://img.shields.io/badge/CUDA-12.3-76B900?style=for-the-badge&logo=nvidia&logoColor=white" alt="CUDA">
+  <img src="https://img.shields.io/badge/C++-17-00599C?style=for-the-badge&logo=cplusplus&logoColor=white" alt="C++">
+  <img src="https://img.shields.io/badge/CMake-Build-064F8C?style=for-the-badge&logo=cmake&logoColor=white" alt="CMake">
+  <img src="https://img.shields.io/badge/Visual%20Studio-2022-5C2D91?style=for-the-badge&logo=visualstudio&logoColor=white" alt="Visual Studio">
+</p>
+
+</div>
+
+---
+
+## 技术栈
+
+<p>
+  <img src="https://skillicons.dev/icons?i=cpp,cmake,visualstudio,git,github" alt="Technology Stack">
+</p>
+
+* **CUDA C++**：GPU 并行计算与 CUDA Kernel 开发
+* **C++**：主机端代码、测试程序与算子封装
+* **CMake**：项目构建与目录管理
+* **Visual Studio / VS Code**：代码编写、编译与调试
+* **Git / GitHub**：代码版本管理
+
 
 这是一个用于学习 CUDA 算子实现与优化的项目。项目目标是从基础算子开始，逐步实现和优化常见深度学习算子，例如 reduce、SGEMM、HGEMM、softmax、layernorm、attention 和 flash attention 等。
 
