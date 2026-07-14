@@ -1,0 +1,17 @@
+{
+    "cmake.configureOnEdit": false,
+    "cmake.configureOnOpen": false,
+
+    "cmake.generator": "Visual Studio 17 2022",
+    "cmake.platform": "x64",
+    "cmake.toolset": "v142,host=x64,version=14.29.30133",
+
+    "cmake.buildDirectory": "${workspaceFolder}/build",
+
+    "cmake.configureEnvironment": {
+        "VCToolsVersion": "14.29.30133"
+    },
+    "cmake.buildEnvironment": {
+        "VCToolsVersion": "14.29.30133"
+    }
+}
