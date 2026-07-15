@@ -26,3 +26,4 @@ endif()
 
 # 添加 operators 下面的 attention 子目录
 add_subdirectory(operators/attention)
+add_subdirectory(operators/elementwise)
