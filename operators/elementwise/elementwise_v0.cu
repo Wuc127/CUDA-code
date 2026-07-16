@@ -1,5 +1,6 @@
 #include "elementwise_v0.cuh"
 #include <cuda_runtime.h>
+#include <device_launch_parameters.h>
 
 
 // 每个线程负责计算一个元素：C[i] = A[i] + B[i]
