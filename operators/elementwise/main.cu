@@ -6,6 +6,9 @@
 #include <ctime>
 
 #include "elementwise_v0.cuh"
+#include "elementwise_v1.cuh"
+#include "elementwise_v2.cuh"
+#include "elementwise_v3.cuh"
 #include "elementwise_check.h"
 
 
@@ -38,7 +41,8 @@ int main()
     srand((unsigned int)time(nullptr));
 
     // 1. 设置数组大小
-    int num_elements = 1024;
+    // 使用 1027 可以测试 v2 和 v3 的尾部元素处理
+    int num_elements = 1027;
 
     size_t bytes = sizeof(float) * num_elements;
 
@@ -104,30 +108,126 @@ int main()
 
         CHECK_CUDA(cudaGetLastError());
         CHECK_CUDA(cudaDeviceSynchronize());
+
+        CHECK_CUDA(cudaMemcpy(
+            C_gpu_host,
+            C_device,
+            bytes,
+            cudaMemcpyDeviceToHost
+        ));
+
+        printf("Check elementwise v0 result:\n");
+        check_elementwise_result(
+            C_cpu,
+            C_gpu_host,
+            num_elements
+        );
     }
 
-    // 8. 把 GPU 结果拷贝回 CPU
-    CHECK_CUDA(cudaMemcpy(
-        C_gpu_host,
-        C_device,
-        bytes,
-        cudaMemcpyDeviceToHost
-    ));
+    // 8. 调用 GPU elementwise v1
+    {
+        int threads = 256;
 
-    // 9. 检查结果
-    printf("Check elementwise v0 result:\n");
-    check_elementwise_result(
-        C_cpu,
-        C_gpu_host,
-        num_elements
-    );
+        // 固定使用较少的线程，让每个线程通过 Grid-Stride Loop 处理一个或多个元素
+        int blocks = 2;
 
-    // 10. 释放 GPU 内存
+        elementwise_v1_kernel<<<blocks, threads>>>(
+            A_device,
+            B_device,
+            C_device,
+            num_elements
+        );
+
+        CHECK_CUDA(cudaGetLastError());
+        CHECK_CUDA(cudaDeviceSynchronize());
+
+        CHECK_CUDA(cudaMemcpy(
+            C_gpu_host,
+            C_device,
+            bytes,
+            cudaMemcpyDeviceToHost
+        ));
+
+        printf("Check elementwise v1 result:\n");
+        check_elementwise_result(
+            C_cpu,
+            C_gpu_host,
+            num_elements
+        );
+    }
+
+    // 9. 调用 GPU elementwise v2
+    {
+        int threads = 256;
+
+        // 一个线程处理连续的 4 个 float
+        int total_threads = (num_elements + 4 - 1) / 4;
+        int blocks = (total_threads + threads - 1) / threads;
+
+        elementwise_v2_kernel<<<blocks, threads>>>(
+            A_device,
+            B_device,
+            C_device,
+            num_elements
+        );
+
+        CHECK_CUDA(cudaGetLastError());
+        CHECK_CUDA(cudaDeviceSynchronize());
+
+        CHECK_CUDA(cudaMemcpy(
+            C_gpu_host,
+            C_device,
+            bytes,
+            cudaMemcpyDeviceToHost
+        ));
+
+        printf("Check elementwise v2 result:\n");
+        check_elementwise_result(
+            C_cpu,
+            C_gpu_host,
+            num_elements
+        );
+    }
+
+    // 10. 调用 GPU elementwise v3
+    {
+        int threads = 128;
+
+        // 固定使用一个 block，让线程通过 Grid-Stride Loop
+        // 处理多个 float4
+        int blocks = 1;
+
+        elementwise_v3_kernel<<<blocks, threads>>>(
+            A_device,
+            B_device,
+            C_device,
+            num_elements
+        );
+
+        CHECK_CUDA(cudaGetLastError());
+        CHECK_CUDA(cudaDeviceSynchronize());
+
+        CHECK_CUDA(cudaMemcpy(
+            C_gpu_host,
+            C_device,
+            bytes,
+            cudaMemcpyDeviceToHost
+        ));
+
+        printf("Check elementwise v3 result:\n");
+        check_elementwise_result(
+            C_cpu,
+            C_gpu_host,
+            num_elements
+        );
+    }
+
+    // 11. 释放 GPU 内存
     CHECK_CUDA(cudaFree(A_device));
     CHECK_CUDA(cudaFree(B_device));
     CHECK_CUDA(cudaFree(C_device));
 
-    // 11. 释放 CPU 内存
+    // 12. 释放 CPU 内存
     free(A_host);
     free(B_host);
     free(C_cpu);

@@ -1,4 +1,6 @@
 #include "elementwise_v3.cuh"
+#include <cuda_runtime.h>
+#include <device_launch_parameters.h>
 
 
 // 使用 Grid-Stride Loop 和 float4 向量化访存完成逐元素加法

@@ -2,6 +2,7 @@
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
+
 // 使用 Grid-Stride Loop 完成逐元素加法：C[i] = A[i] + B[i]
 __global__ void elementwise_v1_kernel(
     const float* A,

@@ -2,6 +2,7 @@
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
+
 // 使用 float4 向量化访存完成逐元素加法：C[i] = A[i] + B[i]
 // 每个线程负责连续的 4 个 float 元素
 __global__ void elementwise_v2_kernel(
