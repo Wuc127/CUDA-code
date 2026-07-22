@@ -6,11 +6,7 @@ import triton
 import triton.language as tl
 
 
-# ============================================================
 # Triton kernels
-# ============================================================
-
-
 @triton.jit
 def elementwise_v0_kernel(
     a_ptr,
