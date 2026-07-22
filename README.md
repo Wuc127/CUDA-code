@@ -1,17 +1,14 @@
-<div align="center">
-
 # CUDA-code
 
-### CUDA 高性能计算与算子优化学习项目
+### CUDA 高性能计算与算子优化
 
 <p>
   <img src="https://img.shields.io/badge/CUDA-12.3-76B900?style=for-the-badge&logo=nvidia&logoColor=white" alt="CUDA">
   <img src="https://img.shields.io/badge/C++-17-00599C?style=for-the-badge&logo=cplusplus&logoColor=white" alt="C++">
+  <img src="https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
   <img src="https://img.shields.io/badge/CMake-Build-064F8C?style=for-the-badge&logo=cmake&logoColor=white" alt="CMake">
   <img src="https://img.shields.io/badge/Visual%20Studio-2022-5C2D91?style=for-the-badge&logo=visualstudio&logoColor=white" alt="Visual Studio">
 </p>
-
-</div>
 
 ---
 
@@ -24,11 +21,11 @@
 * **CUDA C++**：GPU 并行计算与 CUDA Kernel 开发
 * **C++**：主机端代码、测试程序与算子封装
 * **CMake**：项目构建与目录管理
+* **Python**：算子验证、性能测试，以及 Triton 实现与对比
 * **Visual Studio / VS Code**：代码编写、编译与调试
 * **Git / GitHub**：代码版本管理
 
-
-这是一个用于学习 CUDA 算子实现与优化的项目。项目目标是从基础算子开始，逐步实现和优化常见深度学习算子，例如 reduce、SGEMM、HGEMM、softmax、layernorm、attention 和 flash attention 等。
+学习 CUDA 算子实现与优化,从基础算子开始，逐步实现和优化常见深度学习算子，例如 reduce、SGEMM、HGEMM、softmax、layernorm、attention 和 flash attention 等。
 
 ## 1.目录结构
 
@@ -98,12 +95,8 @@ operators/
 ├─ reduce/
 ├─ softmax/
 ├─ layernorm/
-└─ flash_attention/
+└─ elementwise/
 ```
-
-这里不再额外划分 `basic/`、`linear_algebra/`、`transformer/` 等大类。
-当前阶段采用“一个算子一个目录”的方式，更清楚，也更方便学习和迭代。
-
 
 ## 3.CMake target 命名规则
 
@@ -136,17 +129,6 @@ cmake --build build --config Debug --target attention_v0
 
 注意：target 名字在整个 CMake 项目中必须全局唯一。即使不同算子位于不同目录下，也不能创建同名 target。
 
-推荐命名方式：
-
-```text
-reduce_v0
-sgemm_v0
-hgemm_v0
-softmax_v0
-layernorm_v0
-attention_v0
-flash_attention_v0
-```
 
 ## 4.构建方式
 
