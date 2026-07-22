@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <ctime>
 
+#include "elementwise_cpu.h"
 #include "elementwise_v0.cuh"
 #include "elementwise_v1.cuh"
 #include "elementwise_v2.cuh"
@@ -53,10 +54,18 @@ int main()
     float* C_cpu = (float*)malloc(bytes);
     float* C_gpu_host = (float*)malloc(bytes);
 
-    if (A_host == nullptr || B_host == nullptr ||
-        C_cpu == nullptr || C_gpu_host == nullptr)
+    if (A_host == nullptr ||
+        B_host == nullptr ||
+        C_cpu == nullptr ||
+        C_gpu_host == nullptr)
     {
         printf("CPU malloc failed!\n");
+
+        free(A_host);
+        free(B_host);
+        free(C_cpu);
+        free(C_gpu_host);
+
         return 1;
     }
 
@@ -65,10 +74,12 @@ int main()
     random_init(B_host, num_elements);
 
     // 4. 在 CPU 上计算正确结果
-    for (int i = 0; i < num_elements; i++)
-    {
-        C_cpu[i] = A_host[i] + B_host[i];
-    }
+    elementwise_cpu(
+        A_host,
+        B_host,
+        C_cpu,
+        num_elements
+    );
 
     // 5. 分配 GPU 内存
     float* A_device = nullptr;
@@ -117,6 +128,7 @@ int main()
         ));
 
         printf("Check elementwise v0 result:\n");
+
         check_elementwise_result(
             C_cpu,
             C_gpu_host,
@@ -128,7 +140,8 @@ int main()
     {
         int threads = 256;
 
-        // 固定使用较少的线程，让每个线程通过 Grid-Stride Loop 处理一个或多个元素
+        // 固定使用较少的线程，让每个线程通过
+        // Grid-Stride Loop 处理一个或多个元素
         int blocks = 2;
 
         elementwise_v1_kernel<<<blocks, threads>>>(
@@ -149,6 +162,7 @@ int main()
         ));
 
         printf("Check elementwise v1 result:\n");
+
         check_elementwise_result(
             C_cpu,
             C_gpu_host,
@@ -182,6 +196,7 @@ int main()
         ));
 
         printf("Check elementwise v2 result:\n");
+
         check_elementwise_result(
             C_cpu,
             C_gpu_host,
@@ -215,6 +230,7 @@ int main()
         ));
 
         printf("Check elementwise v3 result:\n");
+
         check_elementwise_result(
             C_cpu,
             C_gpu_host,
