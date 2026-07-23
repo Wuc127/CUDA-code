@@ -25,7 +25,7 @@
 * **Visual Studio / VS Code**：代码编写、编译与调试
 * **Git / GitHub**：代码版本管理
 
-学习 CUDA 算子实现与优化,从基础算子开始，逐步实现和优化常见深度学习算子，例如 reduce、SGEMM、HGEMM、softmax、layernorm、attention 和 flash attention 等。
+CUDA 算子实现与优化，从基础算子开始，逐步实现和优化常见深度学习算子，例如 reduce、SGEMM、HGEMM、softmax、layernorm、attention、flash attention 等。
 
 ## 1.目录结构
 

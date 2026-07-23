@@ -1,4 +1,5 @@
 #include "sgemm_v0.cuh"
+#include <device_launch_parameters.h>
 
 
 // Naive SGEMM：一个线程计算 C 中的一个元素
