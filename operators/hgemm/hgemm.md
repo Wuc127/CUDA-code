@@ -1,227 +1,104 @@
-# SGEMM 算子优化
+# HGEMM 算子优化
 
-SGEMM 是单精度浮点矩阵乘法：
+HGEMM 用于计算半精度矩阵乘法：
 
 [
 C = A \times B
 ]
 
-其中：
+其中矩阵 `A`、`B` 和 `C` 使用 FP16 数据类型。为了提高计算精度，各版本通常使用 FP32 进行中间累加，并在计算完成后将结果转换为 FP16。
 
-* (A) 的形状为 (M \times K)
-* (B) 的形状为 (K \times N)
-* (C) 的形状为 (M \times N)
-
-本项目通过多个 CUDA kernel，逐步学习 SGEMM 的优化方法。
-
-## CPU Reference
-
-使用 CPU 计算矩阵乘法，生成参考结果，用于检查 GPU kernel 的正确性。
-
-对应文件：
+## 文件说明
 
 ```text
-sgemm_cpu.cpp
-sgemm_cpu.h
+hgemm/
+├── main.cu
+├── hgemm_cpu.cpp
+├── hgemm_cpu.h
+├── hgemm_check.cpp
+├── hgemm_check.h
+├── hgemm_v0.cu
+├── hgemm_v0.cuh
+├── hgemm_v1.cu
+├── hgemm_v1.cuh
+├── hgemm_v2.cu
+├── hgemm_v2.cuh
+├── hgemm_v3.cu
+├── hgemm_v3.cuh
+├── hgemm_v4.cu
+├── hgemm_v4.cuh
+├── hgemm_v5.cu
+└── hgemm_v5.cuh
 ```
 
-## SGEMM v0：Naive
+* `main.cu`：完成数据初始化、GPU 内存管理、算子调用、正确性检查和性能测试。
+* `hgemm_cpu.cpp`：CPU 参考实现，使用 FP32 进行乘法和累加。
+* `hgemm_check.cpp`：比较 CPU 和 GPU 的计算结果。
+* `hgemm_v*.cu`：不同版本的 HGEMM CUDA 实现。
+* `hgemm_v*.cuh`：对应 CUDA kernel 的函数声明。
 
-一个线程计算矩阵 (C) 中的一个元素。
+## HGEMM v0：朴素实现
+
+一个 CUDA 线程计算输出矩阵 `C` 中的一个元素。
+
+每个线程遍历矩阵的 `K` 维度，依次读取 `A` 的一行和 `B` 的一列，并完成点积计算。
+
+该版本没有使用共享内存，存在较多重复的全局内存访问，主要作为后续优化版本的性能基准。
+
+## HGEMM v1：共享内存分块
+
+将矩阵划分为多个小块，并将当前计算所需的 `A` 和 `B` 子矩阵加载到共享内存中。
+
+线程块内的多个线程可以重复使用共享内存中的数据，从而减少全局内存访问次数，提高数据访问效率。
+
+## HGEMM v2：寄存器分块
+
+在共享内存分块的基础上，让每个线程计算多个输出元素。
+
+每个线程使用寄存器保存多个累加结果，从而提高数据复用率，并减少线程数量和共享内存访问次数。
+
+## HGEMM v3：Half2 向量化
+
+使用 `__half2` 数据类型一次加载和处理两个 FP16 数据。
+
+向量化访问可以减少内存访问指令数量，并提高 FP16 数据的计算吞吐率。
+
+为了保证计算精度，可以将读取的 FP16 数据转换为 FP32 后进行累加。
+
+## HGEMM v4：综合优化
+
+综合使用以下优化方法：
+
+* 共享内存分块；
+* 寄存器分块；
+* Half2 向量化访问；
+* 数据预取；
+* 软件双缓冲。
+
+在计算当前数据块的同时加载下一个数据块，以减少数据加载与计算之间的等待时间。
+
+## HGEMM v5：WMMA 实现
+
+使用 CUDA WMMA API 调用 Tensor Core 完成矩阵乘法。
+
+输入矩阵通常使用 FP16，累加矩阵使用 FP32。WMMA 以固定大小的矩阵块为基本计算单位，例如 `16 × 16 × 16`。
+
+该版本主要用于学习 Tensor Core 的编程方式，需要支持 Tensor Core 的 NVIDIA GPU 才能获得明显的性能提升。
+
+## 优化顺序
 
 ```text
-一个线程 → 一个输出元素
+v0：朴素矩阵乘法
+ ↓
+v1：共享内存分块
+ ↓
+v2：寄存器分块
+ ↓
+v3：Half2 向量化
+ ↓
+v4：综合优化与双缓冲
+ ↓
+v5：WMMA / Tensor Core
 ```
 
-特点：
-
-* 直接从全局内存读取矩阵 (A) 和 (B)
-* 实现简单
-* 数据重复读取较多
-* 作为最基础的性能基准
-
-对应文件：
-
-```text
-sgemm_v0.cu
-sgemm_v0.cuh
-```
-
-## SGEMM v1：Shared Memory Tiling
-
-将矩阵划分为多个 tile，并把当前 tile 加载到共享内存中。
-
-特点：
-
-* 一个线程块计算一个输出 tile
-* block 内线程共享输入数据
-* 减少全局内存的重复访问
-* 学习 `__shared__` 和 `__syncthreads()`
-
-## SGEMM v2：一维寄存器分块
-
-一个线程计算同一行或同一列中的多个输出元素。
-
-```text
-一个线程 → 多个输出元素
-```
-
-特点：
-
-* 使用寄存器数组保存多个累加结果
-* 提高共享内存数据的复用率
-* 增加每个线程的计算量
-
-## SGEMM v3：二维寄存器分块
-
-一个线程计算一个较小的二维输出区域：
-
-[
-TM \times TN
-]
-
-特点：
-
-* 使用二维寄存器数组保存结果
-* 使用外积方式进行计算
-* 同一组输入数据可以更新多个输出
-* 是高性能 SGEMM 的核心优化方式
-
-## SGEMM v4：向量化访存
-
-使用 `float4` 等向量类型，一次读取或写入多个 `float`。
-
-特点：
-
-* 减少访存指令数量
-* 提高全局内存访问效率
-* 需要注意地址对齐
-* 需要处理不能被 4 整除的矩阵尺寸
-
-## SGEMM v5：Shared Memory Bank Conflict 优化
-
-调整共享内存的数据布局，减少 bank conflict。
-
-常见方法：
-
-```text
-转置存储
-增加 padding
-```
-
-特点：
-
-* 改善共享内存访问效率
-* 学习 shared memory bank 的工作方式
-* 性能提升取决于原本是否存在 bank conflict
-
-## SGEMM v6：Double Buffering
-
-使用两组共享内存缓冲区。
-
-```text
-计算当前 tile
-同时准备下一个 tile
-```
-
-特点：
-
-* 通过双缓冲实现软件流水线
-* 尝试隐藏全局内存访问延迟
-* 需要正确处理同步和缓冲区切换
-
-GTX 1650 属于 Turing 架构，因此本版本先使用普通加载实现，不使用 Ampere 架构的 `cp.async`。
-
-## SGEMM v7：Warp Tiling
-
-在 block tile 和 thread tile 之间增加 warp tile。
-
-```text
-Block Tile
-    └── Warp Tile
-            └── Thread Tile
-```
-
-特点：
-
-* 每个 warp 负责一个固定输出区域
-* 明确 block、warp 和 thread 的任务划分
-* 更接近成熟高性能 SGEMM 的实现结构
-* 索引计算和参数设计更加复杂
-
-## cuBLAS Baseline
-
-使用 `cublasSgemm` 作为高性能参考。
-
-作用：
-
-* 对比自定义 kernel 与成熟库的性能差距
-* 观察各个优化版本的性能提升
-* cuBLAS 不负责生成 CPU 正确性参考结果
-
-## 正确性检查
-
-所有 GPU 版本都需要与 CPU 结果比较。
-
-对应文件：
-
-```text
-sgemm_check.cpp
-sgemm_check.h
-```
-
-由于浮点计算可能存在误差，通常使用绝对误差和相对误差进行判断。
-
-## 性能测试
-
-使用 CUDA Event 测量 kernel 的运行时间。
-
-SGEMM 的浮点运算量近似为：
-
-[
-2MNK
-]
-
-GFLOPS 计算公式为：
-
-[
-GFLOPS =
-\frac{2MNK}{t_{ms} \times 10^6}
-]
-
-其中 (t_{ms}) 是 kernel 的平均运行时间，单位为毫秒。
-
-## 实现顺序
-
-```text
-CPU Reference
-    ↓
-v0 Naive
-    ↓
-v1 Shared Memory Tiling
-    ↓
-v2 一维寄存器分块
-    ↓
-v3 二维寄存器分块
-    ↓
-v4 向量化访存
-    ↓
-v5 Bank Conflict 优化
-    ↓
-v6 Double Buffering
-    ↓
-v7 Warp Tiling
-    ↓
-cuBLAS 性能对比
-```
-
-整个优化过程主要围绕以下几个方面展开：
-
-```text
-减少全局内存访问
-提高数据复用率
-增加寄存器计算量
-优化共享内存访问
-提高计算访存比
-隐藏内存访问延迟
-```
+通过逐步实现这些版本，可以观察不同优化方法对 HGEMM 性能的影响，并理解 CUDA 矩阵乘法算子的基本优化思路。
