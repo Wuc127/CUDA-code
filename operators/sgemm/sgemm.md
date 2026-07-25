@@ -14,6 +14,33 @@ C = A \times B
 
 本项目通过多个 CUDA kernel，逐步学习 SGEMM 的优化方法。
 
+## 文件说明
+
+```text
+sgemm/
+├── main.cu
+├── sgemm_cpu.cpp
+├── sgemm_cpu.h
+├── sgemm_check.cpp
+├── sgemm_check.h
+├── sgemm_v0.cu
+├── sgemm_v0.cuh
+├── sgemm_v1.cu
+├── sgemm_v1.cuh
+├── sgemm_v2.cu
+├── sgemm_v2.cuh
+├── sgemm_v3.cu
+├── sgemm_v3.cuh
+├── sgemm_v4.cu
+├── sgemm_v4.cuh
+├── sgemm_v5.cu
+├── sgemm_v5.cuh
+├── sgemm_v6.cu
+├── sgemm_v6.cuh
+├── sgemm_v7.cu
+└── sgemm_v7.cuh
+```
+
 ## CPU Reference
 
 使用 CPU 计算矩阵乘法，生成参考结果，用于检查 GPU kernel 的正确性。
