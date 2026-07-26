@@ -2,17 +2,15 @@
 
 SGEMM 是单精度浮点矩阵乘法：
 
-[
-C = A \times B
-]
+C = A × B
 
 其中：
 
-* (A) 的形状为 (M \times K)
-* (B) 的形状为 (K \times N)
-* (C) 的形状为 (M \times N)
+* (A) 的形状为 (M × K)
 
-本项目通过多个 CUDA kernel，逐步学习 SGEMM 的优化方法。
+* (B) 的形状为 (K × N)
+
+* (C) 的形状为 (M × N)
 
 ## 文件说明
 
@@ -41,6 +39,12 @@ sgemm/
 └── sgemm_v7.cuh
 ```
 
+* `main.cu`：完成数据初始化、GPU 内存管理、算子调用、正确性检查和性能测试。
+* `sgemm_cpu.cpp`：CPU 参考实现
+* `sgemm_check.cpp`：比较 CPU 和 GPU 的计算结果。
+* `sgemm_v*.cu`：不同版本的 CUDA 实现。
+* `sgemm_v*.cuh`：对应 CUDA kernel 的函数声明。
+
 ## CPU Reference
 
 使用 CPU 计算矩阵乘法，生成参考结果，用于检查 GPU kernel 的正确性。
@@ -66,13 +70,6 @@ sgemm_cpu.h
 * 实现简单
 * 数据重复读取较多
 * 作为最基础的性能基准
-
-对应文件：
-
-```text
-sgemm_v0.cu
-sgemm_v0.cuh
-```
 
 ## SGEMM v1：Shared Memory Tiling
 
@@ -204,19 +201,13 @@ sgemm_check.h
 使用 CUDA Event 测量 kernel 的运行时间。
 
 SGEMM 的浮点运算量近似为：
-
-[
-2MNK
-]
+2 × M × N × K
 
 GFLOPS 计算公式为：
+GFLOPS = (2 × M × N × K) / (tₘₛ × 10⁶)
 
-[
-GFLOPS =
-\frac{2MNK}{t_{ms} \times 10^6}
-]
+其中，tₘₛ 是 kernel 的平均运行时间，单位为毫秒。
 
-其中 (t_{ms}) 是 kernel 的平均运行时间，单位为毫秒。
 
 ## 实现顺序
 

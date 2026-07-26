@@ -6,9 +6,33 @@ C[i] = A[i] + B[i]
 
 其中，输入数组 `A` 和 `B` 的长度相同，输出数组 `C` 保存对应元素相加的结果。
 
-## 版本说明
 
-### elementwise_v0
+## 文件说明
+
+```text
+elementwise/
+├── main.cu
+├── elementwise_cpu.cpp
+├── elementwise_cpu.h
+├── elementwise_check.cpp
+├── elementwise_check.h
+├── elementwise_v0.cu
+├── elementwise_v0.cuh
+├── elementwise_v1.cu
+├── elementwise_v1.cuh
+├── elementwise_v2.cu
+├── elementwise_v2.cuh
+├── elementwise_v3.cu
+└── elementwise_v3.cuh
+```
+
+* `main.cu`：完成数据初始化、GPU 内存管理、算子调用、正确性检查和性能测试。
+* `elementwise_cpu.cpp`：CPU 参考实现
+* `elementwise_check.cpp`：比较 CPU 和 GPU 的计算结果。
+* `elementwise_v*.cu`：不同版本的 CUDA 实现。
+* `elementwise_v*.cuh`：对应 CUDA kernel 的函数声明。
+
+## elementwise_v0
 
 最朴素的实现方式。
 
@@ -20,7 +44,7 @@ C[i] = A[i] + B[i]
 C[idx] = A[idx] + B[idx];
 ```
 
-### elementwise_v1
+## elementwise_v1
 
 使用 Grid-Stride Loop。
 
@@ -35,7 +59,7 @@ for (int i = idx; i < num_elements; i += stride)
 }
 ```
 
-### elementwise_v2
+## elementwise_v2
 
 使用 `float4` 进行向量化访存。
 
@@ -44,7 +68,7 @@ for (int i = idx; i < num_elements; i += stride)
 * 减少线程数量和索引计算次数。
 * 需要单独处理元素数量不能被 4 整除的情况。
 
-### elementwise_v3
+## elementwise_v3
 
 结合 Grid-Stride Loop 和 `float4` 向量化访存。
 
