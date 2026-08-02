@@ -9,6 +9,14 @@
 #include "reduce_check.h"
 #include "reduce_v0.cuh"
 #include "reduce_v1.cuh"
+#include "reduce_v2.cuh"
+#include "reduce_v3.cuh"
+#include "reduce_v4.cuh"
+#include "reduce_v5.cuh"
+#include "reduce_v6.cuh"
+#include "reduce_v7.cuh"
+#include "reduce_v8.cuh"
+
 
 
 // 用于检查 CUDA API 是否调用成功

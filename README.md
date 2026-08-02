@@ -1,6 +1,6 @@
 # CUDA-code
 
-### CUDA 高性能计算与算子优化
+## CUDA 高性能计算与算子优化
 
 <p>
   <img src="https://img.shields.io/badge/CUDA-12.3-76B900?style=for-the-badge&logo=nvidia&logoColor=white" alt="CUDA">
@@ -128,7 +128,6 @@ cmake --build build --config Debug --target attention_v0
 ```
 
 注意：target 名字在整个 CMake 项目中必须全局唯一。即使不同算子位于不同目录下，也不能创建同名 target。
-
 
 ## 4.构建方式
 
