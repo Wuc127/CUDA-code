@@ -1,11 +1,10 @@
 # reduce 算子优化
 
-
-
 ## 文件说明
 
 ```text
 reduce/
+├── CMakeLists.txt
 ├── main.cu
 ├── reduce_cpu.cpp
 ├── reduce_cpu.h
@@ -26,7 +25,9 @@ reduce/
 ├── reduce_v6.cu
 ├── reduce_v6.cuh
 ├── reduce_v7.cu
-└── reduce_v7.cuh
+├── reduce_v7.cuh
+├── reduce_v8.cu
+└── reduce_v8.cuh
 ```
 
 * `main.cu`：完成数据初始化、GPU 内存管理、算子调用、正确性检查和性能测试。

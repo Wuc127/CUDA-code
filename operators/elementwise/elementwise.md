@@ -11,6 +11,7 @@ C[i] = A[i] + B[i]
 
 ```text
 elementwise/
+├── CMakeLists.txt
 ├── main.cu
 ├── elementwise_cpu.cpp
 ├── elementwise_cpu.h

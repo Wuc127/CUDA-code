@@ -16,6 +16,7 @@ C = A × B
 
 ```text
 sgemm/
+├── CMakeLists.txt
 ├── main.cu
 ├── sgemm_cpu.cpp
 ├── sgemm_cpu.h
