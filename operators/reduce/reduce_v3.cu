@@ -2,7 +2,7 @@
 #include <device_launch_parameters.h>
 
 
-__global__ void reduce(float *d_input, float *d_output)
+__global__ void reduce_v3_kernel(float *d_input, float *d_output)
 {
     __shared__ float shared[THREAD_PER_BLOCK];
     float *input_begin = d_input + blockDim.x * blockIdx.x;

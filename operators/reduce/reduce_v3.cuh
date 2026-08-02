@@ -7,6 +7,6 @@ constexpr int THREAD_PER_BLOCK = 256;
 
 
 __global__ void reduce_v3_kernel(
-    const float* input,
+    float* input,
     float* output
 );
