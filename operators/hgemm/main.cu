@@ -37,12 +37,8 @@ void random_init(__half* data, int size)
 {
     for (int i = 0; i < size; i++)
     {
-        float value =
-            static_cast<float>(std::rand()) /
-            static_cast<float>(RAND_MAX);
-
+        float value = static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX);
         value = value * 2.0f - 1.0f;
-
         data[i] = __float2half(value);
     }
 }
@@ -51,7 +47,6 @@ void random_init(__half* data, int size)
 int main()
 {
     // 矩阵大小：
-    //
     // A: [M, K]
     // B: [K, N]
     // C: [M, N]
@@ -68,35 +63,16 @@ int main()
     int num_elements_B = K * N;
     int num_elements_C = M * N;
 
-    size_t bytes_A =
-        static_cast<size_t>(num_elements_A) * sizeof(__half);
+    size_t bytes_A = static_cast<size_t>(num_elements_A) * sizeof(__half);
+    size_t bytes_B = static_cast<size_t>(num_elements_B) * sizeof(__half);
+    size_t bytes_C_half = static_cast<size_t>(num_elements_C) * sizeof(__half);
+    size_t bytes_C_float = static_cast<size_t>(num_elements_C) * sizeof(float);
 
-    size_t bytes_B =
-        static_cast<size_t>(num_elements_B) * sizeof(__half);
-
-    size_t bytes_C_half =
-        static_cast<size_t>(num_elements_C) * sizeof(__half);
-
-    size_t bytes_C_float =
-        static_cast<size_t>(num_elements_C) * sizeof(float);
-
-
-    // ============================
     // 申请主机内存
-    // ============================
-
-    __half* A_host =
-        static_cast<__half*>(std::malloc(bytes_A));
-
-    __half* B_host =
-        static_cast<__half*>(std::malloc(bytes_B));
-
-    __half* C_gpu_host =
-        static_cast<__half*>(std::malloc(bytes_C_half));
-
-    float* C_cpu =
-        static_cast<float*>(std::malloc(bytes_C_float));
-
+    __half* A_host = static_cast<__half*>(std::malloc(bytes_A));
+    __half* B_host = static_cast<__half*>(std::malloc(bytes_B));
+    __half* C_gpu_host = static_cast<__half*>(std::malloc(bytes_C_half));
+    float* C_cpu = static_cast<float*>(std::malloc(bytes_C_float));
 
     if (A_host == nullptr ||
         B_host == nullptr ||
@@ -114,20 +90,13 @@ int main()
     }
 
 
-    // ============================
     // 初始化输入矩阵
-    // ============================
-
     random_init(A_host, num_elements_A);
     random_init(B_host, num_elements_B);
 
 
-    // ============================
     // CPU 参考计算
-    // ============================
-
     std::printf("Computing CPU reference result...\n");
-
     hgemm_cpu(
         A_host,
         B_host,
@@ -140,23 +109,13 @@ int main()
     std::printf("CPU reference computation completed.\n");
 
 
-    // ============================
     // 申请 GPU 内存
-    // ============================
-
     __half* A_device = nullptr;
     __half* B_device = nullptr;
     __half* C_device = nullptr;
 
-    CHECK_CUDA(cudaMalloc(
-        reinterpret_cast<void**>(&A_device),
-        bytes_A
-    ));
-
-    CHECK_CUDA(cudaMalloc(
-        reinterpret_cast<void**>(&B_device),
-        bytes_B
-    ));
+    CHECK_CUDA(cudaMalloc(reinterpret_cast<void**>(&A_device),bytes_A));
+    CHECK_CUDA(cudaMalloc(reinterpret_cast<void**>(&B_device),bytes_B));
 
     CHECK_CUDA(cudaMalloc(
         reinterpret_cast<void**>(&C_device),

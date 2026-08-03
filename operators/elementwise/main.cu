@@ -41,16 +41,13 @@ int main()
 {
     srand((unsigned int)time(nullptr));
 
-    // 1. 设置数组大小
-    // 使用 1027 可以测试 v2 和 v3 的尾部元素处理
+    // 设置数组大小。使用 1027 可以测试 v2 和 v3 的尾部元素处理
     int num_elements = 1027;
-
     size_t bytes = sizeof(float) * num_elements;
 
-    // 2. 分配 CPU 内存
+    // 分配 CPU 内存
     float* A_host = (float*)malloc(bytes);
     float* B_host = (float*)malloc(bytes);
-
     float* C_cpu = (float*)malloc(bytes);
     float* C_gpu_host = (float*)malloc(bytes);
 
@@ -60,20 +57,18 @@ int main()
         C_gpu_host == nullptr)
     {
         printf("CPU malloc failed!\n");
-
         free(A_host);
         free(B_host);
         free(C_cpu);
         free(C_gpu_host);
-
         return 1;
     }
 
-    // 3. 初始化输入数组 A 和 B
+    // 初始化输入数组 A 和 B
     random_init(A_host, num_elements);
     random_init(B_host, num_elements);
 
-    // 4. 在 CPU 上计算正确结果
+    // 在 CPU 上计算正确结果
     elementwise_cpu(
         A_host,
         B_host,
@@ -90,7 +85,7 @@ int main()
     CHECK_CUDA(cudaMalloc((void**)&B_device, bytes));
     CHECK_CUDA(cudaMalloc((void**)&C_device, bytes));
 
-    // 6. 把输入数组从 CPU 拷贝到 GPU
+    // 把输入数组从 CPU 拷贝到 GPU
     CHECK_CUDA(cudaMemcpy(
         A_device,
         A_host,
@@ -105,7 +100,7 @@ int main()
         cudaMemcpyHostToDevice
     ));
 
-    // 7. 调用 GPU elementwise v0
+    // 调用 GPU elementwise v0
     {
         int threads = 256;
         int blocks = (num_elements + threads - 1) / threads;
@@ -136,7 +131,7 @@ int main()
         );
     }
 
-    // 8. 调用 GPU elementwise v1
+    // 调用 GPU elementwise v1
     {
         int threads = 256;
 
@@ -170,7 +165,7 @@ int main()
         );
     }
 
-    // 9. 调用 GPU elementwise v2
+    // 调用 GPU elementwise v2
     {
         int threads = 256;
 
@@ -238,12 +233,12 @@ int main()
         );
     }
 
-    // 11. 释放 GPU 内存
+    // 释放 GPU 内存
     CHECK_CUDA(cudaFree(A_device));
     CHECK_CUDA(cudaFree(B_device));
     CHECK_CUDA(cudaFree(C_device));
 
-    // 12. 释放 CPU 内存
+    // 释放 CPU 内存
     free(A_host);
     free(B_host);
     free(C_cpu);
