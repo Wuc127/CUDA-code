@@ -102,6 +102,7 @@ bool run_sgemm_test(
     float* C_gpu_host,
     int M,
     int N,
+    int K,
     std::size_t C_bytes,
     int warmup_iterations,
     int benchmark_iterations
@@ -174,11 +175,11 @@ bool run_sgemm_test(
 
 int main()
 {
-    constexpr int M = 512;
-    constexpr int N = 512;
-    constexpr int K = 512;
+    constexpr int M = 4096;
+    constexpr int N = 4096;
+    constexpr int K = 4096;
     constexpr int warmup_iterations = 5;
-    constexpr int benchmark_iterations = 100;
+    constexpr int benchmark_iterations = 50;
 
     const std::size_t A_num_elements =
         static_cast<std::size_t>(M) * static_cast<std::size_t>(K);
@@ -352,6 +353,7 @@ int main()
             C_gpu_host.data(),
             M,
             N,
+            K,
             C_bytes,
             warmup_iterations,
             benchmark_iterations

@@ -1,6 +1,6 @@
 find_package(CUDAToolkit REQUIRED)
 
-add_executable(sgemm_v0
+add_executable(sgemm
     main.cu
     sgemm_check.cpp
     sgemm_cpu.cpp
@@ -15,14 +15,14 @@ add_executable(sgemm_v0
     sgemm_v7.cu
 )
 
-target_include_directories(sgemm_v0 PRIVATE
+target_include_directories(sgemm PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_link_libraries(sgemm_v0 PRIVATE
+target_link_libraries(sgemm PRIVATE
     CUDA::cublas
 )
 
-set_target_properties(sgemm_v0 PROPERTIES
+set_target_properties(sgemm PROPERTIES
     CUDA_SEPARABLE_COMPILATION ON
 )
