@@ -19,9 +19,7 @@ void sgemm_cpu(
 
             for (int k = 0; k < K; ++k)
             {
-                sum +=
-                    A[row * K + k] *
-                    B[k * N + col];
+                sum += A[row * K + k] * B[k * N + col];
             }
 
             C[row * N + col] = sum;

@@ -27,4 +27,5 @@ endif()
 # 添加已接入构建的算子子目录
 add_subdirectory(operators/attention)
 add_subdirectory(operators/elementwise)
+add_subdirectory(operators/sgemm)
 add_subdirectory(operators/transpose)
